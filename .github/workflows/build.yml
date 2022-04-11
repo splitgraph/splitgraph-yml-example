@@ -2,7 +2,7 @@ name: Build datasets on Splitgraph
 on: workflow_dispatch
 jobs:
   for_hire_vehicles:
-    name: Build splitgraph-demo/fore-hire-vehicles
+    name: Build splitgraph-demo/for-hire-vehicles
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
