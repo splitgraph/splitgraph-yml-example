@@ -1,0 +1,52 @@
+# Move this file to .github/workflows/build.yml
+name: Build datasets on Splitgraph
+on: workflow_dispatch
+jobs:
+  splitgraph_socrata:
+    name: Build splitgraph/socrata
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Splitgraph
+      uses: splitgraph/setup-splitgraph@master
+      with:
+        splitgraph_deployment_url: splitgraph.com
+        splitgraph_api_key: ${{ secrets.SPLITGRAPH_API_KEY }}
+        splitgraph_api_secret: ${{ secrets.SPLITGRAPH_API_SECRET }}
+    - name: Set up data source credentials
+      run: echo "$CREDENTIALS_YML" > splitgraph.credentials.yml
+      shell: bash
+      env:
+        CREDENTIALS_YML: ${{secrets.SPLITGRAPH_CREDENTIALS_YML}}
+    - name: Run sgr cloud load to set up metadata and data source settings
+      run: sgr cloud load --remote splitgraph --initial-private -f splitgraph.yml
+        -f splitgraph.credentials.yml splitgraph/socrata
+      shell: bash
+  splitgraph_dbt_sample:
+    name: Build splitgraph/dbt-sample
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Splitgraph
+      uses: splitgraph/setup-splitgraph@master
+      with:
+        splitgraph_deployment_url: splitgraph.com
+        splitgraph_api_key: ${{ secrets.SPLITGRAPH_API_KEY }}
+        splitgraph_api_secret: ${{ secrets.SPLITGRAPH_API_SECRET }}
+    - name: Set up dbt Git URL
+      run: echo "$CREDENTIALS_YML" > splitgraph.credentials.yml && sed -i "s|\$THIS_REPO_URL|https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY|g"
+        splitgraph.credentials.yml && sed -i "s|\$THIS_SHA|$GITHUB_SHA|g" splitgraph.yml
+      shell: bash
+      env:
+        CREDENTIALS_YML: ${{secrets.SPLITGRAPH_CREDENTIALS_YML}}
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    - name: Run sgr cloud sync to perform the data load into a private repo
+      run: sgr cloud sync --remote splitgraph --initial-private --use-file -f splitgraph.yml
+        -f splitgraph.credentials.yml --wait splitgraph/dbt-sample
+      shell: bash
+    - name: Run sgr cloud load to set up metadata
+      run: sgr cloud load --remote splitgraph --skip-external -f splitgraph.yml -f
+        splitgraph.credentials.yml splitgraph/dbt-sample
+      shell: bash
+    needs:
+    - splitgraph_socrata
