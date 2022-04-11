@@ -1,5 +1,15 @@
 # Sample Splitgraph Cloud project
 
+This is a project that we use to showcase the `splitgraph.yml` functionality. It builds two repositories:
+
+  - [splitgraph-demo/for-hire-vehicles](https://www.splitgraph.com/splitgraph-demo/for-hire-vehicles): List of active for-hire vehicles in New York City ([source](https://data.cityofnewyork.us/Transportation/For-Hire-Vehicles-FHV-Active/8wbx-tsch))
+  - [splitgraph-demo/for-hire-vehicles-summary](https://www.splitgraph.com/splitgraph-demo/for-hire-vehicles-summary): dbt transformation that summarizes the data in the first repository
+
+For another Splitgraph Cloud project, see an example [here](https://github.com/splitgraph/dbt-transform-example): this uses a more
+complex dbt model that joins across multiple Splitgraph datasets.
+
+# Default generated README
+
 Welcome to the sample Splitgraph Cloud project that we generated for your chosen data sources.
 
 This project contains:
