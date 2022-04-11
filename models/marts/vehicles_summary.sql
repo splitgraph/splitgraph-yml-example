@@ -4,4 +4,4 @@ SELECT
     COUNT(*) AS "Count"
 FROM {{ ref('stg_vehicles') }}
 GROUP BY 1, 2
-ORDER BY 3 ASC
+ORDER BY 3 DESC

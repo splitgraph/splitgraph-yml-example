@@ -13,8 +13,15 @@ jobs:
         splitgraph_api_key: ${{ secrets.SPLITGRAPH_API_KEY }}
         splitgraph_api_secret: ${{ secrets.SPLITGRAPH_API_SECRET }}
     - name: Run sgr cloud load to set up metadata and data source settings
-      run: sgr cloud load --remote splitgraph --initial-private -f splitgraph.yml
+      # Add --initial-private to load the data into a private repository (we'll
+      # make this repository public for demo purposes)
+      run: sgr cloud load --remote splitgraph -f splitgraph.yml
         -f splitgraph.credentials.yml splitgraph-demo/for-hire-vehicles
+      shell: bash
+    # Run sgr cloud sync without using splitgraph.yml, which will reuse the existing
+    # data source settings from splitgraph-demo/for-hire-vehicles
+    - name: Run sgr cloud sync to perform the data load
+      run: sgr cloud sync --remote splitgraph --wait splitgraph-demo/for-hire-vehicles
       shell: bash
   for_hire_vehicles_summary:
     name: Build splitgraph-demo/for-hire-vehicles-summary
@@ -33,12 +40,16 @@ jobs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-    - name: Run sgr cloud sync to perform the data load into a private repo
-      run: sgr cloud sync --remote splitgraph --initial-private --use-file -f splitgraph.yml
+    - name: Run sgr cloud sync to perform the data load
+      # Add --initial-private to load the data into a private repository.
+      run: sgr cloud sync --remote splitgraph --use-file -f splitgraph.yml
         -f splitgraph.credentials.yml --wait  splitgraph-demo/for-hire-vehicles-summary
       shell: bash
+      # Set up the metadata too (data source etc). Note that we won't be able to trigger dbt
+      # model runs from Splitgraph in this case, as this will use a temporary GitHub URL to
+      # this project -- this is just to get the dbt icon to show up.
     - name: Run sgr cloud load to set up metadata
-      run: sgr cloud load --remote splitgraph --skip-external -f splitgraph.yml -f
+      run: sgr cloud load --remote splitgraph -f splitgraph.yml -f
         splitgraph.credentials.yml splitgraph-demo/for-hire-vehicles-summary
       shell: bash
     needs:
